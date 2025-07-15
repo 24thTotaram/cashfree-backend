@@ -22,7 +22,7 @@ app.post('/create-order', async (req, res) => {
     const request = {
         order_id: orderId,
         order_amount: orderAmount,
-        order_currency: 'INR',
+        order_currency: 'USD',
         customer_details: {
             customer_id: customerPhone,
             customer_email: customerEmail,
