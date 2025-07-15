@@ -4,7 +4,13 @@ const cors = require('cors');
 const { Cashfree } = require('cashfree-pg');
 
 const app = express();
-app.use(cors());
+app.use(cors({
+    origin: ["https://revachi-ai.com", "http://localhost:5173"], // add your production + dev frontend URLs here
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type"]
+}));
+
+app.use(express.json());
 app.use(express.json());
 
 const cashfree = new Cashfree(Cashfree.SANDBOX, process.env.APP_ID, process.env.SECRET_KEY);
