@@ -5,18 +5,20 @@ const { Cashfree } = require('cashfree-pg');
 
 const app = express();
 app.use(cors({
-    origin: ["https://revachi-ai.com", "http://localhost:5173"], // add your production + dev frontend URLs here
+    origin: ["https://revachi-ai.com", "http://localhost:5173"],
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type"]
 }));
-
 app.use(express.json());
 
-// Initialize Cashfree with your credentials
-Cashfree.XClientId = process.env.APP_ID;
-Cashfree.XClientSecret = process.env.SECRET_KEY;
-Cashfree.XEnvironment = process.env.CASHFREE_ENV; // Change to PRODUCTION when going live
+// ✅ Initialize Cashfree with constructor
+const cashfree = new Cashfree(
+    process.env.cashfree_env || "SANDBOX",
+    process.env.app_id,
+    process.env.secret_key
+);
 
+// ✅ Create Order
 app.post('/create-order', async (req, res) => {
     const {
         orderAmount,
@@ -34,25 +36,20 @@ app.post('/create-order', async (req, res) => {
         order_amount: orderAmount,
         order_currency: 'INR',
         customer_details: {
-            customer_id: `customer_${Date.now()}`, // Generate unique customer ID
+            customer_id: `customer_${Date.now()}`,
             customer_email: customerEmail,
             customer_phone: customerPhone,
-            customer_name: customerName || 'Customer' // Add customer name
+            customer_name: customerName || 'Customer'
         },
         order_meta: {
-            // Use the dynamic return URL from frontend, or fallback to default
             return_url: returnUrl || `https://revachi-ai.com/payment-success?order_id={order_id}`,
-            // Optional: Add notify URL for server-to-server callbacks
             notify_url: notifyUrl || null
         },
-        // Add order expiry time (optional - 30 minutes from now)
         order_expiry_time: new Date(Date.now() + 30 * 60 * 1000).toISOString()
     };
 
     try {
-        const response = await Cashfree.PGCreateOrder("2023-08-01", request);
-
-        // Send back both orderId and paymentSessionId
+        const response = await cashfree.PGCreateOrder(request);
         res.json({
             orderId: orderId,
             paymentSessionId: response.data.payment_session_id,
@@ -67,14 +64,12 @@ app.post('/create-order', async (req, res) => {
     }
 });
 
-// Optional: Add an endpoint to verify payment status
+// ✅ Verify Payment
 app.post('/verify-payment', async (req, res) => {
     const { orderId } = req.body;
 
     try {
-        const response = await Cashfree.PGOrderFetchPayments("2023-08-01", orderId);
-
-        // Check if any payment is successful
+        const response = await cashfree.PGOrderFetchPayments(orderId);
         const successfulPayment = response.data.find(payment =>
             payment.payment_status === 'SUCCESS'
         );
@@ -93,22 +88,18 @@ app.post('/verify-payment', async (req, res) => {
     }
 });
 
-// Optional: Webhook endpoint to receive payment notifications
+// ✅ Webhook (optional)
 app.post('/payment-webhook', express.raw({ type: 'application/json' }), (req, res) => {
     try {
         const signature = req.get('x-webhook-signature');
         const timestamp = req.get('x-webhook-timestamp');
         const rawBody = req.body.toString('utf8');
 
-        // Verify webhook signature (implement based on Cashfree docs)
-        // const isValid = verifyWebhookSignature(signature, timestamp, rawBody);
-
+        // TODO: Verify webhook signature (based on Cashfree docs)
         const webhookData = JSON.parse(rawBody);
         console.log('Webhook received:', webhookData);
 
-        // Process webhook based on event type
         if (webhookData.type === 'PAYMENT_SUCCESS_WEBHOOK') {
-            // Handle successful payment
             console.log('Payment successful for order:', webhookData.data.order.order_id);
         }
 
@@ -119,13 +110,14 @@ app.post('/payment-webhook', express.raw({ type: 'application/json' }), (req, re
     }
 });
 
-// Health check endpoint
+// ✅ Health check
 app.get('/health', (req, res) => {
     res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+// ✅ Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Backend server running on port ${PORT}`);
-    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`Environment: ${process.env.cashfree_env}`);
 });
