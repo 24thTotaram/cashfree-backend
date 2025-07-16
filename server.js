@@ -86,24 +86,14 @@ app.post('/verify-payment', async (req, res) => {
 });
 
 // ✅ Webhook (optional)
-app.post('/payment-webhook', express.raw({ type: 'application/json' }), (req, res) => {
+app.post('/payment-webhook', express.json(), (req, res) => {
     try {
-        const signature = req.get('x-webhook-signature');
-        const timestamp = req.get('x-webhook-timestamp');
-        const rawBody = req.body.toString('utf8');
-
-        // TODO: Verify webhook signature (based on Cashfree docs)
-        const webhookData = JSON.parse(rawBody);
+        const webhookData = req.body; // This is already parsed JSON
         console.log('Webhook received:', webhookData);
-
-        if (webhookData.type === 'PAYMENT_SUCCESS_WEBHOOK') {
-            console.log('Payment successful for order:', webhookData.data.order.order_id);
-        }
-
         res.status(200).send('OK');
-    } catch (error) {
-        console.error('Webhook error:', error);
-        res.status(400).send('Webhook processing failed');
+    } catch (err) {
+        console.error('Webhook error:', err);
+        res.status(400).send('Webhook error');
     }
 });
 
