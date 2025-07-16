@@ -12,14 +12,21 @@ app.use(cors({
 app.use(express.json());
 
 // ✅ Initialize Cashfree with constructor
+// const cashfree = new Cashfree(
+//     process.env.cashfree_env || "SANDBOX",
+//     process.env.app_id,
+//     process.env.secret_key,
+//     {
+//         xApiVersion: '2023-08-01' // ✅ Required for both sandbox & production
+//     }
+// );
 const cashfree = new Cashfree(
-    process.env.cashfree_env || "SANDBOX",
-    process.env.app_id,
-    process.env.secret_key,
-    {
-        xApiVersion: '2023-08-01' // ✅ Required for both sandbox & production
-    }
+    'SANDBOX',
+    'TEST10717027f16a6210b9e650b83a9672071701',
+    'cfsk_ma_test_937f2273fd0d60fa1e0ae5fcb064f8dd_5e6f4bb3',
+    { xApiVersion: '2023-08-01' }
 );
+
 
 // ✅ Create Order
 app.post('/create-order', async (req, res) => {
