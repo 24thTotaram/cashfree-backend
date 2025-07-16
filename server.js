@@ -15,7 +15,10 @@ app.use(express.json());
 const cashfree = new Cashfree(
     process.env.cashfree_env || "SANDBOX",
     process.env.app_id,
-    process.env.secret_key
+    process.env.secret_key,
+    {
+        xApiVersion: '2023-08-01' // ✅ Required for both sandbox & production
+    }
 );
 
 // ✅ Create Order
