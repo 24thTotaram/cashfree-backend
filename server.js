@@ -11,15 +11,7 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// ✅ Initialize Cashfree with constructor
-const cashfree = new Cashfree(
-    Cashfree.SANDBOX, // or process.env.cashfree_env if defined properly
-    process.env.APP_ID,
-    process.env.SECRET_KEY,
-    // {
-    //     xApiVersion: '2023-08-01' // ✅ Required for both sandbox & production
-    // }
-);
+const cashfree = new Cashfree(Cashfree.SANDBOX, process.env.APP_ID, process.env.SECRET_KEY);
 
 
 
