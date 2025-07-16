@@ -15,7 +15,7 @@ app.use(express.json());
 // Initialize Cashfree with your credentials
 Cashfree.XClientId = process.env.APP_ID;
 Cashfree.XClientSecret = process.env.SECRET_KEY;
-Cashfree.XEnvironment = Cashfree.Environment.SANDBOX; // Change to PRODUCTION when going live
+Cashfree.XEnvironment = process.env.CASHFREE_ENV; // Change to PRODUCTION when going live
 
 app.post('/create-order', async (req, res) => {
     const {
