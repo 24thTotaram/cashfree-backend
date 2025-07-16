@@ -5,7 +5,7 @@ const { Cashfree } = require('cashfree-pg');
 
 const app = express();
 app.use(cors({
-    origin: ["https://revachi-ai.com", "http://localhost:5173"],
+    origin: ["https://revachi-ai.com", "http://localhost:5173", "https://330d3dfb3f1f.ngrok-free.app"],
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type"]
 }));
