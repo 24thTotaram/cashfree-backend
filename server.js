@@ -1,3 +1,21 @@
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const { Cashfree } = require('cashfree-pg');
+
+const app = express();
+app.use(cors({
+    origin: ["https://revachi-ai.com", "http://localhost:5173", "https://330d3dfb3f1f.ngrok-free.app"],
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type"]
+}));
+app.use(express.json());
+
+const cashfree = new Cashfree(Cashfree.SANDBOX, process.env.APP_ID, process.env.SECRET_KEY);
+
+
+
+// ✅ Create Order
 app.post('/create-order', async (req, res) => {
     const {
         orderAmount,
