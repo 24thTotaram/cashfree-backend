@@ -65,3 +65,51 @@ app.post('/create-order', async (req, res) => {
         });
     }
 });
+
+// ✅ Verify Payment
+app.post('/verify-payment', async (req, res) => {
+    const { orderId } = req.body;
+
+    try {
+        const response = await cashfree.PGOrderFetchPayments(orderId);
+        const successfulPayment = response.data.find(payment =>
+            payment.payment_status === 'SUCCESS'
+        );
+
+        res.json({
+            success: !!successfulPayment,
+            paymentDetails: successfulPayment || null,
+            allPayments: response.data
+        });
+    } catch (error) {
+        console.error('Payment verification error:', error);
+        res.status(500).json({
+            error: 'Payment verification failed',
+            message: error.response?.data?.message || error.message
+        });
+    }
+});
+
+// ✅ Webhook (optional)
+app.post('/payment-webhook', express.json(), (req, res) => {
+    try {
+        const webhookData = req.body; // This is already parsed JSON
+        console.log('Webhook received:', webhookData);
+        res.status(200).send('OK');
+    } catch (err) {
+        console.error('Webhook error:', err);
+        res.status(400).send('Webhook error');
+    }
+});
+
+// ✅ Health check
+app.get('/health', (req, res) => {
+    res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+// ✅ Start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Backend server running on port ${PORT}`);
+    console.log(`Environment: ${process.env.cashfree_env}`);
+});
